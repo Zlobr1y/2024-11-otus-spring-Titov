@@ -1,1 +1,1 @@
-# 2024-07-otus-spring-TItov
+# 2024-07-otus-spring-Titov
