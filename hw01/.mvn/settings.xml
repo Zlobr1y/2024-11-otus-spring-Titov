@@ -2,38 +2,13 @@
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
 
-    <!-- Укажи репозитории, которые ты хочешь использовать для этого проекта -->
     <mirrors>
-        <!-- Укажи зеркала других репозиториев, если необходимо -->
         <mirror>
             <id>central</id>
             <mirrorOf>central</mirrorOf>
             <url>https://repo.maven.apache.org/maven2/</url>
         </mirror>
     </mirrors>
-
-    <!-- Если необходимо, можно добавить настройки прокси или авторизации для этого проекта -->
-    <!--
-    <proxies>
-        <proxy>
-            <id>example-proxy</id>
-            <active>true</active>
-            <protocol>http</protocol>
-            <host>proxy.example.com</host>
-            <port>8080</port>
-            <username>user</username>
-            <password>password</password>
-            <nonProxyHosts>www.google.com|*.example.com</nonProxyHosts>
-        </proxy>
-    </proxies>
-    -->
-
-    <!-- Можно настроить локальный репозиторий для этого проекта -->
-    <!--
-    <localRepository>/path/to/custom/local/repo</localRepository>
-    -->
-
-    <!-- Настройка профилей, если нужны для конкретного проекта -->
     <profiles>
         <profile>
             <id>central-only</id>
@@ -51,8 +26,6 @@
             </repositories>
         </profile>
     </profiles>
-
-    <!-- Активируем профиль для использования центрального репозитория -->
     <activeProfiles>
         <activeProfile>central-only</activeProfile>
     </activeProfiles>
