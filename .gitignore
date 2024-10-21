@@ -1,2 +1,4 @@
 *.iml
 .idea/
+hw01/.mvn/maven.config
+hw01/.mvn/settings.xml
