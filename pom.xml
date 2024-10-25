@@ -12,6 +12,5 @@
 
     <modules>
         <module>hw01</module>
-        <module>templates</module>
     </modules>
 </project>
