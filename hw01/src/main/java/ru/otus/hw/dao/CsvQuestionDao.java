@@ -2,13 +2,11 @@ package ru.otus.hw.dao;
 
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import ru.otus.hw.config.TestFileNameProvider;
@@ -26,21 +24,20 @@ public class CsvQuestionDao implements QuestionDao {
     public List<Question> findAll() {
         System.out.println("Current working directory: " + System.getProperty("user.dir"));
 
-        InputStream inputStream = getClass().getResourceAsStream("/questions.csv");
+        InputStream inputStream = getClass().getResourceAsStream("/" + fileNameProvider.getTestFileName());
+
         if (inputStream == null) {
-            try {
-                throw new FileNotFoundException("Resource not found: /questions.csv");
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
+            throw new IllegalArgumentException("Файл с вопросами не найден: " + fileNameProvider.getTestFileName());
         }
 
-        try (Reader reader = new InputStreamReader(inputStream)) {
-            CsvToBean<QuestionDto> csvToBean = getCsvToBean(reader);
-            List<QuestionDto> dtos = csvToBean.parse();
-            return dtos.stream()
-                    .map(dto -> new Question(dto.getText(), dto.getAnswers()))
-                    .collect(Collectors.toList());
+        try {
+            try (Reader reader = new InputStreamReader(inputStream)) {
+                CsvToBean<QuestionDto> csvToBean = getCsvToBean(reader);
+                List<QuestionDto> dtos = csvToBean.parse();
+                return dtos.stream()
+                        .map(dto -> new Question(dto.getText(), dto.getAnswers()))
+                        .collect(Collectors.toList());
+            }
         } catch (IOException e) {
             throw new QuestionReadException("Error reading questions from CSV", e);
         }

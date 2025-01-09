@@ -1,9 +1,13 @@
 package ru.otus.hw.config;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+
+@Setter
+@Getter
+@RequiredArgsConstructor
 public class TestFileNameProviderImpl implements TestFileNameProvider {
 
-    @Override
-    public String getTestFileName() {
-        return "questions.csv";
-    }
+    String testFileName;
 }
