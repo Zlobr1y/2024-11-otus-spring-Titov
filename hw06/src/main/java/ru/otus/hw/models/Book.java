@@ -12,28 +12,31 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-@Data
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "books")
 @NamedEntityGraph(name = "author-genre-entity-graph",
         attributeNodes = {@NamedAttributeNode("author"), @NamedAttributeNode("genre")})
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Book {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
+    @ToString.Include
     private long id;
 
     @Column(name = "title")
+    @ToString.Include
     private String title;
 
     @ManyToOne(fetch = FetchType.LAZY)

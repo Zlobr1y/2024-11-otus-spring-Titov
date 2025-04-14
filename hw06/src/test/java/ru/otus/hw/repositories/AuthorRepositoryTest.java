@@ -10,7 +10,7 @@ import ru.otus.hw.models.Author;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Import({AuthorRepositoryJpa.class})
+@Import({JpaAuthorRepository.class})
 public class AuthorRepositoryTest {
 
     private static final long FIRST_AUTHOR_ID = 1L;
@@ -21,7 +21,7 @@ public class AuthorRepositoryTest {
     private TestEntityManager em;
 
     @Autowired
-    private AuthorRepositoryJpa authorRepository;
+    private JpaAuthorRepository authorRepository;
 
     @Test
     public void findByIdTest() {

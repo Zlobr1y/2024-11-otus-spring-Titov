@@ -46,6 +46,7 @@ public class BookRepositoryJpa implements BookRepository {
 
     @Override
     public void deleteById(long id) {
-        findById(id).ifPresent(em::remove);
+        var bookReference = em.getReference(Book.class, id);
+        em.remove(bookReference);
     }
 }

@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import ru.otus.hw.repositories.AuthorRepositoryJpa;
+import ru.otus.hw.repositories.JpaAuthorRepository;
 import ru.otus.hw.repositories.BookRepository;
 import ru.otus.hw.repositories.BookRepositoryJpa;
 import ru.otus.hw.repositories.GenreRepositoryJpa;
@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
-@Import({BookServiceImpl.class, AuthorRepositoryJpa.class, GenreRepositoryJpa.class, BookRepositoryJpa.class})
+@Import({BookServiceImpl.class, JpaAuthorRepository.class, GenreRepositoryJpa.class, BookRepositoryJpa.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 public class BookServiceTest {
 
@@ -40,8 +40,19 @@ public class BookServiceTest {
 
     @Test
     public void findAllTest() {
+        var expectedBooks = List.of(
+                new Book(1L, "Book 1", new Author(1L, "Author 1"), new Genre(1L, "Genre 1")),
+                new Book(2L, "Book 2", new Author(2L, "Author 2"), new Genre(2L, "Genre 2")),
+                new Book(3L, "Book 3", new Author(3L, "Author 3"), new Genre(3L, "Genre 3"))
+        );
+
         var actualBooks = service.findAll();
-        assertThat(actualBooks).isNotNull().hasSize(EXPECTED_NUMBER_OF_BOOKS);
+
+        assertThat(actualBooks)
+                .isNotNull()
+                .hasSize(EXPECTED_NUMBER_OF_BOOKS)
+                .usingRecursiveComparison()
+                .isEqualTo(expectedBooks);
     }
 
     @Test
@@ -56,6 +67,20 @@ public class BookServiceTest {
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     public void deleteByIdTest() {
+    var expectedBook = new Book(
+            FIRST_BOOK_ID,
+            "Expected Title",
+            new Author(1L, "Expected Author"),
+            new Genre(1L, "Expected Genre")
+    );
+
+    var bookBeforeDeletion = bookRepository.findById(FIRST_BOOK_ID);
+    assertTrue(bookBeforeDeletion.isPresent());
+
+    assertThat(bookBeforeDeletion.get())
+            .usingRecursiveComparison()
+            .isEqualTo(expectedBook);
+
         service.deleteById(FIRST_BOOK_ID);
         assertTrue(bookRepository.findById(FIRST_BOOK_ID).isEmpty());
     }
@@ -66,6 +91,9 @@ public class BookServiceTest {
         var updatedBook = service.update(id, "title", 1L, 1L);
         var expectedBook = bookRepository.findById(id);
         assertTrue(expectedBook.isPresent());
-        assertEquals(expectedBook.get(), updatedBook);
+
+    assertThat(updatedBook)
+            .usingRecursiveComparison()
+            .isEqualTo(expectedBook.get());
     }
 }
