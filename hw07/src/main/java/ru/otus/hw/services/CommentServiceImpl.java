@@ -39,8 +39,12 @@ public class CommentServiceImpl implements CommentService {
 
     @Transactional
     @Override
-    public Comment update(long id, String text, long bookId) {
-        return save(id, text, bookId);
+    public Comment update(long id, String text) {
+        var comment = commentRepository.findById(id)
+                .orElseThrow(() -> new CommentNotFoundException("Комментарий с ID " + id + " не найден"));
+        comment.setText(text);
+
+        return commentRepository.save(comment);
     }
 
     @Transactional

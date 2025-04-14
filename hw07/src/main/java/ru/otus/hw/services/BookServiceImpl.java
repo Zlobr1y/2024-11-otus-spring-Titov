@@ -42,7 +42,18 @@ public class BookServiceImpl implements BookService {
     @Transactional
     @Override
     public Book update(long id, String title, long authorId, long genreId) {
-        return save(id, title, authorId, genreId);
+        var existingBook = bookRepository.findById(id)
+                .orElseThrow(() -> new BookNotFoundException("Книга с ID " + id + " не найдена"));
+        var author = authorRepository.findById(authorId)
+                .orElseThrow(() -> new AuthorNotFoundException("Автор с ID " + authorId + " не найден"));
+        var genre = genreRepository.findById(genreId)
+                .orElseThrow(() -> new GenreNotFoundException("Жанр с ID " + genreId + " не найден"));
+
+        existingBook.setTitle(title);
+        existingBook.setAuthor(author);
+        existingBook.setGenre(genre);
+
+        return bookRepository.save(existingBook);
     }
 
     @Transactional
