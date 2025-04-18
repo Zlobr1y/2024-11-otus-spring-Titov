@@ -13,7 +13,7 @@ import ru.otus.hw.models.Genre;
 
 
 @RequiredArgsConstructor
-public class BookRepositoryCustomImpl implements BookRepositoryCustom {
+public class CustomBookRepositoryImpl implements CustomBookRepository {
 
     private final MongoTemplate mongoTemplate;
 
@@ -21,8 +21,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 
     @Override
     public void deleteByBookId(String bookId) {
-        mongoTemplate.remove(Query.query(Criteria.where("_id").is(bookId)), Book.class);
-        mongoTemplate.remove(Query.query(Criteria.where("book._id").is(bookId)), Comment.class);
+    bookRepository.deleteById(bookId);
     }
 
     @Override

@@ -21,13 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @DataMongoTest
 @EnableConfigurationProperties
 @ComponentScan({"ru.otus.hw.repositories"})
-public class BookRepositoryCustomTest {
+public class CustomBookRepositoryTest {
 
     @Autowired
     private MongoTemplate mongoTemplate;
 
     @Autowired
-    private BookRepository bookRepository;
+    private CustomBookRepositoryImpl bookRepository;
 
     @Autowired
     private CommentRepository commentRepository;

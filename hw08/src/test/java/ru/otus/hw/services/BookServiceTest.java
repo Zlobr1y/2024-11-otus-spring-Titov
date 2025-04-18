@@ -53,6 +53,7 @@ public class BookServiceTest {
     public void deleteByIdTest() {
         bookService.deleteById(FIRST_BOOK_ID);
         assertTrue(bookRepository.findById(FIRST_BOOK_ID).isEmpty());
+        assertTrue(commentRepository.findByBookId(FIRST_BOOK_ID).isEmpty());
     }
 
     @Test
