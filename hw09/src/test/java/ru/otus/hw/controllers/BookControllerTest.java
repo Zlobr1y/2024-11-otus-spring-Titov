@@ -3,10 +3,10 @@ package ru.otus.hw.controllers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Genre;
@@ -17,15 +17,15 @@ import ru.otus.hw.services.GenreService;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
-@WebMvcTest(BookController.class)
-class BookControllerTest {
+@SpringBootTest
+@AutoConfigureMockMvc
+public class BookControllerTest {
 
     @Autowired
     private MockMvc mvc;
@@ -34,111 +34,94 @@ class BookControllerTest {
     private BookService bookService;
 
     @MockBean
-    private CommentService commentService;
-
-    @MockBean
     private AuthorService authorService;
 
     @MockBean
     private GenreService genreService;
 
-    private List<Genre> genres;
+    @MockBean
+    private CommentService commentService;
 
-    private List<Author> authors;
-
-    private List<BookDto> books;
+    private final Author testAuthor = new Author("1", "Author_1");
+    private final Genre testGenre = new Genre("1", "Genre_1");
+    private final BookDto testBook = new BookDto("1", "BookTitle_1", testAuthor, testGenre);
 
     @BeforeEach
-    public void init() {
-        genres = getGenres();
-        authors = getAuthors();
-        books = getBooksDto();
+    void setUp() {
+        given(bookService.findAll()).willReturn(List.of(testBook));
+        given(bookService.findById("1")).willReturn(testBook);
+        given(authorService.findAll()).willReturn(List.of(testAuthor));
+        given(genreService.findAll()).willReturn(List.of(testGenre));
     }
 
     @Test
-    void getBooks() throws Exception {
-        given(bookService.findAll()).willReturn(books);
+    void getBooks_shouldReturnBooksListPage() throws Exception {
         mvc.perform(get("/books"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(MockMvcResultMatchers.view().name("books/list"));
+                .andExpect(view().name("books/list"))
+                .andExpect(model().attributeExists("books"));
     }
 
     @Test
-    void getBook() throws Exception {
-        String id = "1";
-        given(bookService.findById(id)).willReturn(books.get(0));
-        mvc.perform(get("/books/" + id))
+    void getBook_shouldReturnBookDetailsPage() throws Exception {
+        mvc.perform(get("/books/1"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(MockMvcResultMatchers.view().name("books/book"));
+                .andExpect(view().name("books/book"))
+                .andExpect(model().attributeExists("book"))
+                .andExpect(model().attributeExists("comments"));
     }
 
     @Test
-    void editPage() throws Exception {
-        String id = "1";
-        given(bookService.findById(id)).willReturn(books.get(0));
-        mvc.perform(get("/books/edit?id=" + id))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(MockMvcResultMatchers.view().name("books/edit"));
-    }
-
-    @Test
-    void editBook() throws Exception {
-        String id = "1";
-        mvc.perform(post("/books/edit?id=" + id)
-                        .param("id", "1")
-                        .param("title", "title1"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(MockMvcResultMatchers.view().name("redirect:/books"));
-    }
-
-    @Test
-    void removeBook() throws Exception {
-        String id = "1";
-        mvc.perform(post("/books/remove?id=" + id))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(MockMvcResultMatchers.view().name("redirect:/books"));
-    }
-
-    @Test
-    void createPage() throws Exception {
+    void createPage_shouldReturnCreateForm() throws Exception {
         mvc.perform(get("/books/create"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(MockMvcResultMatchers.view().name("books/create"));
+                .andExpect(view().name("books/create"))
+                .andExpect(model().attributeExists("book"))
+                .andExpect(model().attributeExists("authors"))
+                .andExpect(model().attributeExists("genres"));
     }
 
     @Test
-    void createBook() throws Exception {
-        String id = "1";
+    void createBook_shouldCreateBookAndRedirect() throws Exception {
         mvc.perform(post("/books/create")
-                        .param("id", id)
-                        .param("title", "title2"))
+                        .param("title", "New Book")
+                        .param("author.id", "1")
+                        .param("genre.id", "1"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(MockMvcResultMatchers.view().name("redirect:/books"));
+                .andExpect(redirectedUrl("/books"));
+
+        verify(bookService).insert(any(BookDto.class));
     }
 
-    private List<Author> getAuthors() {
-        return List.of(
-                new Author("1", "Author_1"),
-                new Author("2", "Author_2"),
-                new Author("3", "Author_3"));
+    @Test
+    void editPage_shouldReturnEditForm() throws Exception {
+        mvc.perform(get("/books/edit").param("id", "1"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("books/edit"))
+                .andExpect(model().attributeExists("book"))
+                .andExpect(model().attributeExists("authors"))
+                .andExpect(model().attributeExists("genres"));
     }
 
-    private List<Genre> getGenres() {
-        return List.of(
-                new Genre("1", "Genre_1"),
-                new Genre("2", "Genre_2"),
-                new Genre("3", "Genre_3"));
+    @Test
+    void editBook_shouldUpdateBookAndRedirect() throws Exception {
+        mvc.perform(post("/books/edit")
+                        .param("id", "1")
+                        .param("title", "Updated Title")
+                        .param("author.id", "1")
+                        .param("genre.id", "1"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/books"));
+
+        verify(bookService).update(any(BookDto.class));
     }
 
+    @Test
+    void removeBook_shouldDeleteBookAndRedirect() throws Exception {
+        mvc.perform(post("/books/remove").param("id", "1"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/books"));
 
-    private List<BookDto> getBooksDto() {
-        return List.of(
-                new BookDto("1", "BookTitle_1", authors.get(0), genres.get(0)),
-                new BookDto("2", "BookTitle_2", authors.get(1), genres.get(1)),
-                new BookDto("3", "BookTitle_3", authors.get(2), genres.get(2)));
+        verify(bookService).deleteById("1");
     }
 }
